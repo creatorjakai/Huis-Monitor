@@ -4,7 +4,6 @@ import time
 import socket
 import os
 import sys
-import random
 
 #Initializeren van onderdelen
 pygame.init()
@@ -17,7 +16,7 @@ SCREEN_HEIGHT = 600
 
 #Inializeren van belangerijke variabelen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Huis Monitor v26.0.25 BETA")
+pygame.display.set_caption("Huis Monitor v26.0.31 ALPHA")
 pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 15)
@@ -51,8 +50,8 @@ def askpassword():
     if randomsearch:
         screen.fill((255, 255, 255))
         client.sendall((serverpassword + "\n").encode())
-        clientip = f"Wachten op reactie van: {randomip}:{rndport}..."
-        screen.blit(typfont.render(clientip, True, (0, 0, 0)), (5,(SCREEN_HEIGHT - 20)))
+        clientip = f"{randomip}:{rndport}"
+        screen.blit(typfont.render(f"Wachten op reactie van: {clientip}...", True, (0, 0, 0)), (5,(SCREEN_HEIGHT - 20)))
         pygame.display.flip()
         datareceive = client.recv(1024).decode()
         if datareceive.strip() == "LOGIN_OK":
@@ -66,8 +65,8 @@ def askpassword():
     else:
         screen.fill((255, 255, 255))
         client.sendall((serverpassword + "\n").encode())
-        clientip = f"Wachten op reactie van: {searchip}:{searchport}..."
-        screen.blit(typfont.render(clientip, True, (0, 0, 0)), (5,(SCREEN_HEIGHT - 20)))
+        clientip = f"{searchip}:{searchport}"
+        screen.blit(typfont.render(f"Wachten op reactie van: {clientip}...", True, (0, 0, 0)), (5,(SCREEN_HEIGHT - 20)))
         pygame.display.flip()
         datareceive = client.recv(1024).decode()
         if datareceive.strip() == "LOGIN_OK":
@@ -127,6 +126,7 @@ def chooseip():
                 start3 = int((randomip.split(".")[2]))
                 start4 = int((randomip.split(".")[3]))
                 startport = int(rndport)
+                client.close()
                 return searchfordeviceonip()
             if event.button == 1 and pygame.mouse.get_pos() >= (680, 475) and pygame.mouse.get_pos() <= (820, 525):
                 deviceip = randomip, rndport
@@ -261,9 +261,21 @@ def screen_setup():
     pygame.quit()
 
 def screen_tmp():
-    client.sendall(("tmp" + "\n").encode())
-    crnttmp = client.recv(1024).decode()
-    screen.blit(typfont.render(f"Temperatuur: {crnttmp}", True, (0, 0, 0)), (5, 5))
+    global client, receiving
+    receiving = True
+    while receiving:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        client.sendall(("tmp" + "\n").encode())
+        crnttmp = client.recv(1024).decode()
+        screen.blit(typfont.render(f"Temperatuur: {crnttmp}", True, (0, 0, 0)), (5, 5))
+        pygame.display.flip()
+
+        clock.tick(60)
+
+    return main()
 
 
 def connect():
@@ -288,7 +300,7 @@ def connect():
             break
 
 def main():
-    global running, errortext
+    global running, errortext, menu
     menu = "setup"
     while running:
         for event in pygame.event.get():
