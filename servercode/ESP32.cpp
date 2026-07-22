@@ -71,10 +71,10 @@ void loop() {
       while (client.connected()) {
         if (client.available()) {
           String data = client.readStringUntil('\n');
-          Serial.println(data);
-          
+          Serial.println(data)
           //Hier moet je iets zetten als je iets terug naar de Computer wil sturen
           client.println("ESP32 zegt: Hallo!");
+          delay(10);
         }
       }
       client.stop();
