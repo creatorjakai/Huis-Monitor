@@ -72,6 +72,7 @@ void loop() {
       Serial.println(data);
       //Hier moet je iets zetten als je iets terug naar de Computer wil sturen
       client.println("ESP8266 zegt: Hallo!");
+      delay(10);
     }
   }
   client.stop();
